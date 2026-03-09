@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* Override Tailwind preflight for dark theme */
+html {
+  background-color: var(--bg-primary) !important;
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
 :root {
   --bg-primary: #050a0f;
   --bg-secondary: #0a1520;
@@ -29,8 +40,8 @@
 
 html,
 body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
   font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
   overflow-x: hidden;
   min-height: 100vh;
