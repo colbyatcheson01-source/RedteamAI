@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -49,15 +49,45 @@ const activeBgMap: Record<string, string> = {
 };
 
 export default function Navigation() {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+
+  // Close menu on route change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 min-h-screen bg-[#0a1520] border-r border-[#1a3a4a] fixed left-0 top-0 z-50">
+      {/* Floating Menu Toggle Button - Desktop */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="hidden md:flex fixed top-4 left-4 z-50 p-3 rounded-lg bg-[#0a1520] border border-[#1a3a4a] hover:border-[#ff3366] transition-all duration-200 group"
+        aria-label="Toggle menu"
+      >
+        {isOpen ? (
+          <X className="w-5 h-5 text-[#ff3366]" />
+        ) : (
+          <Menu className="w-5 h-5 text-[#7ab8cc] group-hover:text-[#ff3366] transition-colors" />
+        )}
+      </button>
+
+      {/* Floating Menu Overlay - Desktop */}
+      {isOpen && (
+        <div
+          className="hidden md:block fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Floating Sidebar - Desktop */}
+      <aside
+        className={`hidden md:flex flex-col w-72 max-h-[calc(100vh-2rem)] bg-[#0a1520] border border-[#1a3a4a] rounded-xl fixed top-2 left-2 z-50 transform transition-all duration-300 ${
+          isOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 pointer-events-none"
+        }`}
+      >
         {/* Logo */}
-        <div className="p-6 border-b border-[#1a3a4a]">
+        <div className="p-4 border-b border-[#1a3a4a]">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="w-10 h-10 rounded-lg bg-[rgba(255,51,102,0.15)] border border-[#ff3366] flex items-center justify-center">
@@ -88,7 +118,7 @@ export default function Navigation() {
         </div>
 
         {/* Nav Items */}
-        <nav className="flex-1 p-4 space-y-1 mt-2">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -156,30 +186,30 @@ export default function Navigation() {
           </span>
         </div>
         <button
-          onClick={() => setMobileOpen(!mobileOpen)}
+          onClick={() => setIsOpen(!isOpen)}
           className="p-2 rounded border border-[#1a3a4a] text-[#7ab8cc]"
         >
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </header>
 
       {/* Mobile Menu Overlay */}
-      {mobileOpen && (
+      {isOpen && (
         <div
           className="md:hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm"
-          onClick={() => setMobileOpen(false)}
+          onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Mobile Drawer */}
       <div
         className={`md:hidden fixed top-0 right-0 bottom-0 z-50 w-72 bg-[#0a1520] border-l border-[#1a3a4a] transform transition-transform duration-300 ${
-          mobileOpen ? "translate-x-0" : "translate-x-full"
+          isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="p-4 border-b border-[#1a3a4a] flex items-center justify-between">
           <span className="text-sm text-[#7ab8cc] uppercase tracking-widest">Navigation</span>
-          <button onClick={() => setMobileOpen(false)} className="text-[#3d6b7a]">
+          <button onClick={() => setIsOpen(false)} className="text-[#3d6b7a]">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -191,7 +221,7 @@ export default function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setMobileOpen(false)}
+                onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg border transition-all duration-200 ${
                   isActive
                     ? `${activeBgMap[item.color]} border-opacity-60`
