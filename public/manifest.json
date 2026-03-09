@@ -2,6 +2,7 @@
   "name": "RedOps - Red Team Platform",
   "short_name": "RedOps",
   "description": "Advanced red teaming and penetration testing platform",
+  "version": "1.0.0",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#050a0f",
@@ -20,5 +21,6 @@
     }
   ],
   "categories": ["security", "utilities"],
-  "screenshots": []
+  "screenshots": [],
+  "prefer_related_applications": false
 }

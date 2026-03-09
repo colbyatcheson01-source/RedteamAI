@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Settings,
   Shield,
@@ -20,10 +20,14 @@ import {
   Server,
   Radio,
   Cpu,
+  Monitor,
+  Download,
+  Info,
 } from "lucide-react";
 
 const sections = [
   { id: "general", label: "General", icon: Settings },
+  { id: "desktop", label: "Desktop", icon: Monitor },
   { id: "network", label: "Network & GPS", icon: Wifi },
   { id: "ai", label: "AI Engine", icon: Brain },
   { id: "security", label: "Security", icon: Shield },
@@ -46,6 +50,35 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState("general");
   const [saved, setSaved] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.matchMedia("(display-mode: standalone)").matches;
+    }
+    return false;
+  });
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  // Listen for install prompt
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    (installPrompt as any).prompt();
+    const { outcome } = await (installPrompt as any).userChoice;
+    if (outcome === "accepted") {
+      setIsInstalled(true);
+    }
+    setInstallPrompt(null);
+  };
 
   // Settings state
   const [settings, setSettings] = useState({
@@ -177,6 +210,72 @@ export default function SettingsPage() {
                     <div className="text-[10px] text-[#3d6b7a]">Send anonymous usage data to improve the platform</div>
                   </div>
                   <Toggle value={settings.telemetry} onChange={v => update("telemetry", v)} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "desktop" && (
+            <div className="space-y-4">
+              <div className="cyber-card p-5 space-y-5">
+                <h2 className="text-sm font-semibold text-[#e0f4ff] border-b border-[#1a3a4a] pb-3">Desktop Installation</h2>
+                <div className="space-y-4">
+                  {isInstalled ? (
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-[rgba(0,255,136,0.1)] border border-[rgba(0,255,136,0.3)]">
+                      <CheckCircle className="w-5 h-5 text-[#00ff88]" />
+                      <div>
+                        <div className="text-xs text-[#00ff88] font-semibold">Installed as Desktop App</div>
+                        <div className="text-[10px] text-[#3d6b7a]">RedOps is running as a standalone application</div>
+                      </div>
+                    </div>
+                  ) : installPrompt ? (
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 p-4 rounded-lg bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.3)]">
+                        <Monitor className="w-5 h-5 text-[#00d4ff] flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <div className="text-xs text-[#00d4ff] font-semibold">Install RedOps Desktop App</div>
+                          <div className="text-[10px] text-[#3d6b7a] mt-1">Get the full desktop experience with offline capability, system tray, and native performance.</div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleInstall}
+                        className="w-full btn-cyber flex items-center justify-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Install Desktop App
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-3 p-4 rounded-lg bg-[rgba(255,140,0,0.1)] border border-[rgba(255,140,0,0.3)]">
+                      <Info className="w-5 h-5 text-[#ff8c00] flex-shrink-0 mt-0.5" />
+                      <div>
+                        <div className="text-xs text-[#ff8c00] font-semibold">Installation not available</div>
+                        <div className="text-[10px] text-[#3d6b7a] mt-1">Desktop installation is only available when accessing via a supported browser (Chrome, Edge, Brave).</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="cyber-card p-5 space-y-5">
+                <h2 className="text-sm font-semibold text-[#e0f4ff] border-b border-[#1a3a4a] pb-3">Version Information</h2>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-xs text-[#7ab8cc]">Application Version</span>
+                    <span className="text-xs text-[#e0f4ff] font-mono">1.0.0</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-xs text-[#7ab8cc]">Platform</span>
+                    <span className="text-xs text-[#e0f4ff] font-mono">Web (PWA)</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-xs text-[#7ab8cc]">Build Date</span>
+                    <span className="text-xs text-[#e0f4ff] font-mono">2026-03-09</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-t border-[#1a3a4a]">
+                    <span className="text-xs text-[#7ab8cc]">Manifest Version</span>
+                    <span className="text-xs text-[#00ff88] font-mono">✓ v1.0.0</span>
+                  </div>
                 </div>
               </div>
             </div>
