@@ -20,6 +20,9 @@ import {
   Globe,
   Server,
   Zap,
+  Wifi,
+  Signal,
+  Eye,
 } from "lucide-react";
 
 const scanProfiles = [
@@ -99,6 +102,18 @@ const terminalLines = [
   { type: "success", text: "Nmap done: 1 IP address (1 host up) scanned in 47.23 seconds" },
 ];
 
+// Nearby available networks for discovery
+const nearbyNetworks = [
+  { ip: "192.168.1.1", hostname: "router.local", mac: "00:1A:2B:3C:4D:5E", vendor: "Cisco Systems", type: "Gateway/Router", signal: -45, openPorts: 2, services: ["HTTP", "SSH", "TELNET"] },
+  { ip: "192.168.1.105", hostname: "webserver-prod", mac: "AA:BB:CC:DD:EE:FF", vendor: "Dell Inc.", type: "Server", signal: -52, openPorts: 5, services: ["HTTP", "HTTPS", "SSH", "MySQL", "RDP"] },
+  { ip: "192.168.1.142", hostname: "dev-machine", mac: "11:22:33:44:55:66", vendor: "HP", type: "Workstation", signal: -58, openPorts: 3, services: ["HTTP", "SSH", "VNC"] },
+  { ip: "192.168.1.178", hostname: "iot-camera-01", mac: "A1:B2:C3:D4:E5:F6", vendor: "Hikvision", type: "IoT Device", signal: -65, openPorts: 2, services: ["RTSP", "HTTP"] },
+  { ip: "192.168.1.201", hostname: "printer-office", mac: "FF:EE:DD:CC:BB:AA", vendor: "Brother", type: "Printer", signal: -71, openPorts: 1, services: ["HTTP", "IPP"] },
+  { ip: "192.168.1.223", hostname: "nas-storage", mac: "12:34:56:78:9A:BC", vendor: "Synology", type: "NAS", signal: -68, openPorts: 4, services: ["SMB", "HTTP", "SSH", "AFP"] },
+  { ip: "192.168.1.88", hostname: "win-ad-server", mac: "DE:AD:BE:EF:CA:FE", vendor: "Microsoft", type: "Domain Controller", signal: -48, openPorts: 8, services: ["LDAP", "Kerberos", "DNS", "SMB", "RPC", "HTTP", "HTTPS", "WinRM"] },
+  { ip: "192.168.1.254", hostname: "ipcam-hub", mac: "FE:DC:BA:98:76:54", vendor: "Ubiquiti", type: "NVR System", signal: -72, openPorts: 3, services: ["RTSP", "HTTP", "ONVIF"] },
+];
+
 const severityConfig: Record<string, { color: string; bg: string; border: string; badge: string }> = {
   critical: { color: "#ff3366", bg: "rgba(255,51,102,0.05)", border: "rgba(255,51,102,0.2)", badge: "badge-critical" },
   high: { color: "#ff8c00", bg: "rgba(255,140,0,0.05)", border: "rgba(255,140,0,0.2)", badge: "badge-high" },
@@ -115,6 +130,10 @@ export default function ScannerPage() {
   const [activeTab, setActiveTab] = useState<"results" | "terminal">("results");
   const [terminalIdx, setTerminalIdx] = useState(terminalLines.length);
   const [copied, setCopied] = useState<string | null>(null);
+  const [showNearby, setShowNearby] = useState(false);
+  const [discovering, setDiscovering] = useState(false);
+  const [discoveredNetworks, setDiscoveredNetworks] = useState<typeof nearbyNetworks>([]);
+  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null);
   const scanRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const startScan = () => {
@@ -139,6 +158,32 @@ export default function ScannerPage() {
     navigator.clipboard.writeText(text);
     setCopied(id);
     setTimeout(() => setCopied(null), 2000);
+  };
+
+  // Discover nearby networks
+  const discoverNetworks = () => {
+    setDiscovering(true);
+    setShowNearby(true);
+    setDiscoveredNetworks([]);
+    
+    // Simulate network discovery with staggered results
+    let idx = 0;
+    const discoveryInterval = setInterval(() => {
+      if (idx < nearbyNetworks.length) {
+        setDiscoveredNetworks(prev => [...prev, nearbyNetworks[idx]]);
+        idx++;
+      } else {
+        clearInterval(discoveryInterval);
+        setDiscovering(false);
+      }
+    }, 400);
+  };
+
+  // Select a network from discovered list
+  const selectNetwork = (network: typeof nearbyNetworks[0]) => {
+    setTarget(network.ip);
+    setSelectedNetwork(network.ip);
+    setShowNearby(false);
   };
 
   const criticalCount = mockVulns.filter(v => v.severity === "critical").length;
@@ -174,11 +219,80 @@ export default function ScannerPage() {
               <input
                 type="text"
                 value={target}
-                onChange={(e) => setTarget(e.target.value)}
+                onChange={(e) => { setTarget(e.target.value); setSelectedNetwork(null); }}
                 placeholder="IP, range, or hostname"
                 className="cyber-input"
               />
             </div>
+            
+            {/* Discover Nearby Button */}
+            <button
+              onClick={discoverNetworks}
+              disabled={discovering}
+              className="mt-2 w-full flex items-center justify-center gap-2 py-2 px-3 rounded border border-[#00d4ff] text-[#00d4ff] text-xs hover:bg-[rgba(0,212,255,0.1)] transition-all"
+            >
+              {discovering ? (
+                <><Signal className="w-3 h-3 animate-pulse" /> Discovering...</>
+              ) : (
+                <><Wifi className="w-3 h-3" /> Scan for Nearby Targets</>
+              )}
+            </button>
+
+            {/* Nearby Networks Dropdown */}
+            {showNearby && (
+              <div className="mt-2 border border-[#1a3a4a] rounded bg-[#0a1520] max-h-64 overflow-y-auto">
+                <div className="sticky top-0 bg-[#0f1f2a] px-3 py-2 border-b border-[#1a3a4a] flex items-center justify-between">
+                  <span className="text-[10px] text-[#7ab8cc] uppercase tracking-wider">
+                    Discovered {discoveredNetworks.length}/{nearbyNetworks.length}
+                  </span>
+                  <button onClick={() => setShowNearby(false)} className="text-[#3d6b7a] hover:text-[#ff3366]">
+                    <Square className="w-3 h-3" />
+                  </button>
+                </div>
+                {discoveredNetworks.length === 0 && !discovering && (
+                  <div className="p-4 text-center text-[#3d6b7a] text-xs">
+                    Click scan to discover nearby targets
+                  </div>
+                )}
+                {discoveredNetworks.map((network) => (
+                  <div
+                    key={network.ip}
+                    onClick={() => selectNetwork(network)}
+                    className={`px-3 py-2 cursor-pointer border-b border-[#1a3a4a] last:border-b-0 transition-all hover:bg-[rgba(0,212,255,0.05)] ${
+                      selectedNetwork === network.ip ? "bg-[rgba(0,212,255,0.15)] border-l-2 border-l-[#00d4ff]" : ""
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Network className="w-3 h-3 text-[#00d4ff]" />
+                        <span className="text-xs font-mono text-[#e0f4ff]">{network.ip}</span>
+                        {network.signal && (
+                          <Signal className="w-3 h-3" style={{ color: network.signal > -50 ? "#00ff88" : network.signal > -65 ? "#ff8c00" : "#ff3366" }} />
+                        )}
+                      </div>
+                      <span className="text-[9px] text-[#3d6b7a]">{network.vendor}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[9px] text-[#7ab8cc]">{network.hostname}</span>
+                      <span className="text-[9px] text-[#3d6b7a]">•</span>
+                      <span className="text-[9px] text-[#3d6b7a]">{network.type}</span>
+                      <span className="text-[9px] text-[#3d6b7a]">•</span>
+                      <span className="text-[9px] text-[#ff8c00]">{network.openPorts} ports</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {network.services.slice(0, 4).map((service) => (
+                        <span key={service} className="px-1.5 py-0.5 rounded bg-[rgba(0,255,136,0.1)] text-[9px] text-[#00ff88]">
+                          {service}
+                        </span>
+                      ))}
+                      {network.services.length > 4 && (
+                        <span className="text-[9px] text-[#3d6b7a]">+{network.services.length - 4}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Scan Profile */}

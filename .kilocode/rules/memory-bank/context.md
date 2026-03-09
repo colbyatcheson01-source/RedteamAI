@@ -1,10 +1,10 @@
-# Active Context: Next.js Starter Template
+# Active Context: RedOps Red Team Platform
 
 ## Current State
 
-**Template Status**: ✅ Ready for development
+**Project Status**: ✅ Active Development
 
-The template is a clean Next.js 16 starter with TypeScript and Tailwind CSS 4. It's ready for AI-assisted expansion to build any type of application.
+RedOps is a red teaming and penetration testing platform with AI-powered capabilities, war driving features, and PWA support for desktop installation.
 
 ## Recently Completed
 
@@ -14,15 +14,28 @@ The template is a clean Next.js 16 starter with TypeScript and Tailwind CSS 4. I
 - [x] ESLint configuration
 - [x] Memory bank documentation
 - [x] Recipe system for common features
+- [x] RedOps platform UI with cyber/hacker theme
+- [x] Navigation component with route handling
+- [x] AI assistant page with chat interface
+- [x] Database page for access point management
+- [x] Payloads page for exploit generation
+- [x] Scanner page for network scanning
+- [x] Terminal page with command execution
+- [x] Wardriving page with GPS map integration
+- [x] Settings page with PWA desktop installation
 
 ## Current Structure
 
-| File/Directory | Purpose | Status |
-|----------------|---------|--------|
-| `src/app/page.tsx` | Home page | ✅ Ready |
-| `src/app/layout.tsx` | Root layout | ✅ Ready |
-| `src/app/globals.css` | Global styles | ✅ Ready |
-| `.kilocode/` | AI context & recipes | ✅ Ready |
+| `src/app/(app)/page.tsx` | Dashboard home | ✅ Ready |
+| `src/app/(app)/ai/page.tsx` | AI assistant | ✅ Ready |
+| `src/app/(app)/database/page.tsx` | Access point database | ✅ Ready |
+| `src/app/(app)/payloads/page.tsx` | Payload generation | ✅ Ready |
+| `src/app/(app)/scanner/page.tsx` | Network scanner | ✅ Ready |
+| `src/app/(app)/terminal/page.tsx` | Terminal interface | ✅ Ready |
+| `src/app/(app)/wardriving/page.tsx` | War driving map | ✅ Ready |
+| `src/app/(app)/settings/page.tsx` | Settings with PWA install | ✅ Ready |
+| `src/components/Navigation.tsx` | Navigation sidebar | ✅ Ready |
+| `src/components/WarDriveMap.tsx` | GPS map component | ✅ Ready |
 
 ## Current Focus
 
@@ -85,3 +98,5 @@ export async function GET() {
 | Date | Changes |
 |------|---------|
 | Initial | Template created with base setup |
+| 2026-03-09 | Added RedOps platform with AI, scanner, terminal, war driving, and settings pages |
+| 2026-03-09 | Added PWA desktop installation feature to settings |
