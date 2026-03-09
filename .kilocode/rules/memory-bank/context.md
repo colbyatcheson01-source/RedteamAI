@@ -23,6 +23,7 @@ RedOps is a red teaming and penetration testing platform with AI-powered capabil
 - [x] Terminal page with command execution
 - [x] Wardriving page with GPS map integration
 - [x] Settings page with PWA desktop installation
+- [x] Nearby network discovery in scanner
 
 ## Current Structure
 
